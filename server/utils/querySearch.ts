@@ -51,13 +51,7 @@ If the answer is not in docs, reply: "Not in docs."
 
   console.log("\nAnswer:\n");
   console.log(res.content);
+  return res.content;
 }
 
-async function run() {
-  const question = "how to use dependencies in fastapi?";
-  const framework = "fastapi";
-  console.log(`Searching for: "${question}" in framework: ${framework}`);
-  await search(question, framework);
-}
-
-run().catch(console.error);
+export { search };

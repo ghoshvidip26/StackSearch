@@ -5,6 +5,13 @@ import { Document } from "langchain";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { FaissStore } from "@langchain/community/vectorstores/faiss";
 import { geminiEmbeddings } from "./utils/geminiLLM";
+import express from "express";
+import cors from "cors";
+import { search } from "./utils/querySearch";
+
+const app = express();
+app.use(cors());
+app.use(express.json());
 
 const ROOT = "docs_dataset";
 
@@ -65,7 +72,15 @@ async function run() {
   }
 }
 
-run().catch((err) => {
-  console.error("FATAL ERROR:", err);
-  process.exit(1);
+app.post("/search", async (req, res) => {
+  const { query, framework } = req.body;
+  console.log("Query: ", query);
+  console.log("Framework: ", framework);
+  const results = await search(query, framework);
+  console.log("Results: ", results);
+  res.status(200).json(results);
+});
+
+app.listen(3000, () => {
+  console.log("Server started on port 3000");
 });

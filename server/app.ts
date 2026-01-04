@@ -73,12 +73,19 @@ async function run() {
 }
 
 app.post("/search", async (req, res) => {
-  const { query, framework } = req.body;
-  console.log("Query: ", query);
-  console.log("Framework: ", framework);
-  const results = await search(query, framework);
-  console.log("Results: ", results);
-  res.status(200).json(results);
+  try {
+    const { query, framework, history } = req.body;
+
+    if (!framework)
+      return res.status(400).json({ error: "Framework required" });
+
+    const answer = await search(query, framework, history || []);
+
+    res.json(answer);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Search failed" });
+  }
 });
 
 app.listen(3000, () => {

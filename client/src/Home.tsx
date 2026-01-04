@@ -97,15 +97,18 @@ const featuredStacks = techStacks.filter((t) =>
 /* ---------------- COMPONENT ---------------- */
 
 export default function Home() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  /* Lazy initialization to prevent flash and stuck loading state */
+  const init = (defaultState: State): State => {
+    const saved = loadState();
+    if (saved) {
+      return { ...saved, loading: false };
+    }
+    return defaultState;
+  };
+
+  const [state, dispatch] = useReducer(reducer, initialState, init);
   const [input, setInput] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-  /* Load from localStorage */
-  useEffect(() => {
-    const saved = loadState();
-    if (saved) dispatch({ type: "LOAD_SAVED", payload: saved });
-  }, []);
 
   /* Save on change */
   useEffect(() => {
@@ -154,6 +157,7 @@ export default function Home() {
     const question = input;
     setInput("");
 
+    // Add user message to UI state
     dispatch({
       type: "ADD_MESSAGE",
       payload: { role: "user", content: question },
@@ -168,7 +172,8 @@ export default function Home() {
         body: JSON.stringify({
           query: question,
           framework: state.framework,
-          history: state.messages,
+          // Fix: Ensure we include the new message in the history sent to the backend
+          history: [...state.messages, { role: "user", content: question }],
         }),
       });
 
@@ -216,7 +221,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex flex-1 overflow-hidden bg-linear-to-br from-slate-950 via-slate-900 to-slate-950">
+      <main className="flex flex-1 overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         {/* SIDEBAR */}
         <AnimatePresence>
           {isSidebarOpen && (
@@ -232,10 +237,9 @@ export default function Home() {
                     key={tech.name}
                     whileHover={{ x: 6 }}
                     className={`w-full px-4 py-2.5 rounded-lg flex items-center gap-3 text-sm font-medium transition-colors
-                      ${
-                        state.framework === tech.name
-                          ? "bg-indigo-500 text-white shadow-sm"
-                          : "text-slate-100/80 hover:bg-slate-800/80"
+                      ${state.framework === tech.name
+                        ? "bg-indigo-500 text-white shadow-sm"
+                        : "text-slate-100/80 hover:bg-slate-800/80"
                       }`}
                     onClick={() =>
                       dispatch({ type: "SET_FRAMEWORK", payload: tech.name })
@@ -323,16 +327,14 @@ export default function Home() {
                   key={i}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`flex ${
-                    m.role === "user" ? "justify-end" : "justify-start"
-                  }`}
+                  className={`flex ${m.role === "user" ? "justify-end" : "justify-start"
+                    }`}
                 >
                   <div
-                    className={`px-5 py-4 rounded-2xl shadow-sm max-w-3xl ${
-                      m.role === "user"
-                        ? "bg-indigo-500 text-white"
-                        : "bg-slate-800/80 border border-slate-700 text-slate-100"
-                    }`}
+                    className={`px-5 py-4 rounded-2xl shadow-sm max-w-3xl ${m.role === "user"
+                      ? "bg-indigo-500 text-white"
+                      : "bg-slate-800/80 border border-slate-700 text-slate-100"
+                      }`}
                   >
                     <div className="flex items-center gap-2 text-sm opacity-80 mb-1">
                       {m.role === "user" ? <User /> : <Bot />}
@@ -362,9 +364,8 @@ export default function Home() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 className="w-full px-4 py-3 rounded-2xl border border-slate-700 bg-slate-900/80 text-slate-100 placeholder:text-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/70 focus:border-indigo-500 text-sm"
-                placeholder={`Ask about ${
-                  state.framework || "any technology"
-                }…`}
+                placeholder={`Ask about ${state.framework || "any technology"
+                  }…`}
               />
 
               <button

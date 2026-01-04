@@ -1,57 +1,54 @@
 import "dotenv/config";
+import path from "path";
 import { FaissStore } from "@langchain/community/vectorstores/faiss";
 import { geminiEmbeddings, geminiLLM } from "./geminiLLM";
 
-import path from "path";
-const VECTOR_PATH = path.join(__dirname, "..", "faiss_store");
+const VECTOR_ROOT = path.join(__dirname, "..", "faiss_store");
 
-async function search(question: string, framework: string) {
-  console.log(`Loading FAISS store from: ${VECTOR_PATH}`);
-  const store = await FaissStore.load(VECTOR_PATH, geminiEmbeddings);
+export async function search(
+  question: string,
+  framework: string,
+  history: any[] = []
+) {
+  const fw = framework.toLowerCase();
 
-  // First, let's verify the framework filter works
-  const allDocs = await store.similaritySearch(question, 10);
-  console.log(`Found ${allDocs.length} total documents`);
+  const storePath = path.join(VECTOR_ROOT, fw);
 
-  // Filter by framework
-  const frameworkDocs = allDocs.filter(
-    (doc) => doc.metadata.framework.toLowerCase() === framework.toLowerCase()
-  );
+  console.log("📂 Loading FAISS index:", storePath);
 
-  console.log(
-    `Found ${frameworkDocs.length} documents for framework: ${framework}`
-  );
+  const store = await FaissStore.load(storePath, geminiEmbeddings);
 
-  // Take top 5 from filtered results
-  const results = frameworkDocs.slice(0, 5);
+  const results = await store.similaritySearch(question, 5);
 
-  console.log("\nRetrieved Docs:\n");
-  console.log(
-    results.map((r: any) => ({
-      framework: r.metadata.framework,
-      file: r.metadata.filename,
-      preview: r.pageContent.slice(0, 120),
-    }))
-  );
+  if (!results.length) return "Not in docs.";
 
-  const context = results.map((r: any) => r.pageContent).join("\n\n");
+  const context = results
+    .map((r) => r.pageContent)
+    .join("\n\n");
+
+  const historyText = history
+    .slice(-6)
+    .map((h: any) => `${h.role === "user" ? "User" : "Assistant"}: ${h.content}`)
+    .join("\n");
 
   const prompt = `
-Answer the question using ONLY the documentation below.
+You are a strict documentation assistant for ${framework}.
+Answer ONLY using the Documentation below.
+
+If the answer is not present, reply exactly:
+"Not in docs."
+
+Conversation History:
+${historyText}
 
 Documentation:
 ${context}
 
-Question: ${question}
-
-If the answer is not in docs, reply: "Not in docs."
+User Question:
+${question}
 `;
 
   const res = await geminiLLM.invoke(prompt);
 
-  console.log("\nAnswer:\n");
-  console.log(res.content);
   return res.content;
 }
-
-export { search };

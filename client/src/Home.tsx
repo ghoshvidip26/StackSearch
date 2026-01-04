@@ -4,6 +4,9 @@ import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import Navbar from "./components/Navbar";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 
 type Message = {
   role: "user" | "assistant";
@@ -71,6 +74,17 @@ const techStacks = [
 export default function Home() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [input, setInput] = useState("");
+  const navigate = useNavigate();
+  const user = useSelector((state: any) => state.user);
+  console.log(user);
+  useEffect(() => {
+    const handleUser = () => {
+      if (user.user === null) {
+        return navigate("/");
+      }
+    };
+    handleUser();
+  }, [user, navigate]);
 
   useEffect(() => {
     async function loadHistory() {
@@ -152,16 +166,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen bg-slate-950">
-      {/* HEADER */}
-      <header className="bg-slate-900 text-white border-b border-slate-800 px-8 py-3 flex items-center gap-3">
-        <img
-          src="/StackSearch.png"
-          alt="StackSearch logo"
-          className="w-7 h-7"
-        />
-        <h1 className="text-xl font-semibold text-[#8B8DFF]">StackSearch</h1>
-      </header>
-
+      <Navbar />
       <main className="flex flex-1 overflow-hidden">
         {/* SIDEBAR */}
         <aside className="w-64 bg-slate-900 border-r border-slate-800 p-4 hidden md:block">

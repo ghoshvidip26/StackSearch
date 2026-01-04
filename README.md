@@ -1,4 +1,3 @@
-# Code-Documentation-Helper
 # 🔍 StackSearch — AI-Powered Developer Documentation Assistant
 
 StackSearch is an AI-powered search assistant that lets developers query framework documentation using natural language. Ask anything about **AWS, Docker, FastAPI, React, MongoDB, Node.js, Redis, PostgreSQL, Tailwind CSS, TypeScript**, and more — StackSearch retrieves the most relevant docs using **vector search (FAISS + Gemini embeddings)** and replies **only from the official documentation**.

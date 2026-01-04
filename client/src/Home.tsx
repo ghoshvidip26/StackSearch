@@ -1,9 +1,9 @@
 import { useEffect, useReducer, useState } from "react";
-import { Send, Code, Copy } from "lucide-react";
+import { Send, Copy } from "lucide-react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 type Message = {
   role: "user" | "assistant";
@@ -63,7 +63,7 @@ const techStacks = [
   { name: "Kubernetes", icon: "☸️" },
   { name: "Go", icon: "🐹" },
   { name: "Python", icon: "🐍" },
-  { name: "Django", icon: "🌿" }
+  { name: "Django", icon: "🌿" },
 ];
 
 /* ---------------- COMPONENT ---------------- */
@@ -75,13 +75,15 @@ export default function Home() {
   useEffect(() => {
     async function loadHistory() {
       try {
-        const res = await fetch(`http://localhost:3000/history/${state.framework}`);
+        const res = await fetch(
+          `http://localhost:3000/history/${state.framework}`
+        );
         const data = await res.json();
         console.log(data?.history);
 
         dispatch({
           type: "SET_MESSAGES",
-          payload: Array.isArray(data?.history) ? data?.history : []
+          payload: Array.isArray(data?.history) ? data?.history : [],
         });
       } catch (e) {
         console.warn("History failed to load", e);
@@ -113,12 +115,18 @@ export default function Home() {
 
       dispatch({
         type: "ADD_MESSAGE",
-        payload: { role: "assistant", content: messageContent ?? "No response" },
+        payload: {
+          role: "assistant",
+          content: messageContent ?? "No response",
+        },
       });
     } catch {
       dispatch({
         type: "ADD_MESSAGE",
-        payload: { role: "assistant", content: "⚠️ Backend error. Please try again." },
+        payload: {
+          role: "assistant",
+          content: "⚠️ Backend error. Please try again.",
+        },
       });
     }
 
@@ -144,26 +152,31 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen bg-slate-950">
-
       {/* HEADER */}
       <header className="bg-slate-900 text-white border-b border-slate-800 px-8 py-3 flex items-center gap-3">
-        <Code className="w-6 h-6 text-indigo-400" />
-        <h1 className="text-xl font-semibold">DevStack AI</h1>
+        <img
+          src="/StackSearch.png"
+          alt="StackSearch logo"
+          className="w-7 h-7"
+        />
+        <h1 className="text-xl font-semibold text-[#8B8DFF]">StackSearch</h1>
       </header>
 
       <main className="flex flex-1 overflow-hidden">
-
         {/* SIDEBAR */}
         <aside className="w-64 bg-slate-900 border-r border-slate-800 p-4 hidden md:block">
           {techStacks.map((t) => (
             <motion.button
               whileHover={{ x: 6 }}
               key={t.name}
-              onClick={() => dispatch({ type: "SET_FRAMEWORK", payload: t.name })}
-              className={`w-full text-slate-200 px-3 py-2 rounded-lg text-left mb-1 ${state.framework === t.name
-                ? "bg-indigo-500"
-                : "hover:bg-slate-800"
-                }`}
+              onClick={() =>
+                dispatch({ type: "SET_FRAMEWORK", payload: t.name })
+              }
+              className={`w-full text-slate-200 px-3 py-2 rounded-lg text-left mb-1 ${
+                state.framework === t.name
+                  ? "bg-indigo-500"
+                  : "hover:bg-slate-800"
+              }`}
             >
               {t.icon} {t.name}
             </motion.button>
@@ -182,10 +195,11 @@ export default function Home() {
                     dispatch({ type: "SET_FRAMEWORK", payload: tech.name })
                   }
                   className={`px-4 py-2.5 rounded-lg flex items-center gap-3 text-sm font-medium transition-colors text-slate-200
-      ${state.framework === tech.name
-                      ? "bg-indigo-500 text-white shadow-sm"
-                      : "text-slate-100/80 hover:bg-slate-800/80"
-                    }`}
+      ${
+        state.framework === tech.name
+          ? "bg-indigo-500 text-white shadow-sm"
+          : "text-slate-100/80 hover:bg-slate-800/80"
+      }`}
                 >
                   <span>{tech.icon}</span>
                   <span>{tech.name}</span>
@@ -194,16 +208,21 @@ export default function Home() {
             </div>
           )}
 
-
           {/* MESSAGES */}
           <div className="flex-1 overflow-y-auto p-8 space-y-6">
             {state.messages.map((m, idx) => (
-              <div key={idx} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div
+                key={idx}
+                className={`flex ${
+                  m.role === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
                 <div
-                  className={`px-5 py-4 text-slate-200 rounded-2xl max-w-3xl ${m.role === "user"
-                    ? "bg-indigo-500"
-                    : "bg-slate-800 border border-slate-700"
-                    }`}
+                  className={`px-5 py-4 text-slate-200 rounded-2xl max-w-3xl ${
+                    m.role === "user"
+                      ? "bg-indigo-500"
+                      : "bg-slate-800 border border-slate-700"
+                  }`}
                 >
                   <ReactMarkdown
                     components={{
@@ -215,7 +234,9 @@ export default function Home() {
                               <button
                                 className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition"
                                 onClick={() =>
-                                  navigator.clipboard.writeText(String(children))
+                                  navigator.clipboard.writeText(
+                                    String(children)
+                                  )
                                 }
                               >
                                 <Copy size={14} />
@@ -246,11 +267,16 @@ export default function Home() {
             ))}
 
             {state.loading && (
-              <p className="text-center text-slate-400">Assistant is thinking…</p>
+              <p className="text-center text-slate-400">
+                Assistant is thinking…
+              </p>
             )}
           </div>
           {/* INPUT */}
-          <form onSubmit={handleSubmit} className="p-4 bg-slate-900 border-t border-slate-800">
+          <form
+            onSubmit={handleSubmit}
+            className="p-4 bg-slate-900 border-t border-slate-800"
+          >
             <div className="flex gap-3 max-w-4xl mx-auto">
               <input
                 value={input}
